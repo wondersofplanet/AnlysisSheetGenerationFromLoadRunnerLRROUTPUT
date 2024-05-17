@@ -1,0 +1,312 @@
+Sub aaaaaaaaaRunMeForAnalysisSheetGeneration()
+
+RenameSheetIfInvalid
+CopyTransactionSummary
+SortAndMoveData
+CopyHeadingRowToSplitData
+DeleteColumnsStartingWithSLAStatus
+DeleteColumnsStartingWithStop
+FindAndColorEmptyRows
+AutoFitDatainSplitDataSheet
+
+End Sub
+
+
+Sub RenameSheetIfInvalid()
+    Dim currentSheet As Worksheet
+    Dim newName As String
+    Dim randomNumber As Integer
+    
+    Set currentSheet = ActiveSheet ' Assuming the current sheet is the one you want to rename
+    
+    Select Case currentSheet.Name
+        Case "InputFile", "txsummary", "Split Data"
+            ' Do nothing
+        Case Else
+            ' If "InputFile" name is already taken, rename to a random name
+            If SheetExists("InputFile") Then
+                randomNumber = Int((1000 - 1 + 1) * Rnd + 1)
+                newName = "DefaultSheetName " & randomNumber
+                MsgBox "Please run this script in the 'InputFile' sheet.", vbInformation
+            Else
+                newName = "InputFile"
+            End If
+            
+            ' Check if the new name already exists
+            If SheetExists(newName) Then
+                randomNumber = Int((1000 - 1 + 1) * Rnd + 1)
+                newName = "DefaultSheetName " & randomNumber
+            End If
+            
+            currentSheet.Name = newName
+    End Select
+End Sub
+
+Function SheetExists(sheetName As String) As Boolean
+    Dim ws As Worksheet
+    
+    For Each ws In Worksheets
+        If ws.Name = sheetName Then
+            SheetExists = True
+            Exit Function
+        End If
+    Next ws
+    
+    SheetExists = False
+End Function
+
+
+
+Sub CopyTransactionSummary()
+    Dim wsSource As Worksheet
+    Dim wsDest As Worksheet
+    Dim rngTransaction As Range
+    Dim rngCopy As Range
+    Dim lastRow As Long
+    Dim copyEndRow As Long
+    Dim cell As Range
+    
+    ' Set the source worksheet
+    Set wsSource = ThisWorkbook.Sheets("InputFile") ' Change to your source worksheet
+    
+    ' Find the cell containing the text "Transaction Name" in the source worksheet
+    Set rngTransaction = wsSource.Cells.Find(What:="Transaction Name", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    If Not rngTransaction Is Nothing Then
+        ' Set the destination worksheet (txsummary)
+        On Error Resume Next
+        Set wsDest = ThisWorkbook.Sheets("txsummary")
+        On Error GoTo 0
+        
+        If wsDest Is Nothing Then
+            ' Create a new worksheet named "txsummary"
+            Set wsDest = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+            wsDest.Name = "txsummary"
+        End If
+        
+        ' Clear the contents of the destination sheet
+        wsDest.Cells.Clear
+        
+        ' Determine the end row of the range to copy
+        lastRow = wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row
+        
+        ' Find the first empty row after "Transaction Name"
+        For copyEndRow = rngTransaction.Row + 1 To lastRow
+            Set cell = wsSource.Cells(copyEndRow, rngTransaction.Column)
+            ' Trim the content and check if the cell is empty
+            If Trim(cell.Value) = "" Then
+                Exit For
+            End If
+        Next copyEndRow
+        
+        ' Define the range to copy (from the row below the cell containing "Transaction Name" to the first empty row)
+        Set rngCopy = wsSource.Range(wsSource.Cells(rngTransaction.Row + 1, 1), wsSource.Cells(copyEndRow - 1, wsSource.Columns.Count))
+        
+        If Not rngCopy Is Nothing Then
+            ' Copy the data from the source sheet to the destination sheet
+            rngCopy.Copy wsDest.Cells(1, 1)
+            
+            MsgBox "Transaction summary copied successfully!", vbInformation
+        Else
+            MsgBox "No data to copy!", vbExclamation
+        End If
+    Else
+        MsgBox "Transaction Name not found!", vbExclamation
+    End If
+End Sub
+
+
+
+
+
+Sub SortAndMoveData()
+    Dim wsSource As Worksheet
+    Dim wsDest As Worksheet
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim currentPrefix As String
+    Dim lastRow As Long
+    Dim rowCount As Long
+    Dim i As Long
+
+    ' Set the source worksheet
+    'Set wsSource = ActiveSheet ' Change to your source worksheet
+Set wsSource = ThisWorkbook.Sheets("txsummary")
+    ' Check if the destination worksheet "Split Data" exists, otherwise create it
+    On Error Resume Next
+    Set wsDest = ThisWorkbook.Sheets("Split Data")
+    On Error GoTo 0
+
+    If wsDest Is Nothing Then
+        ' Destination worksheet does not exist, create it
+        Set wsDest = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+        wsDest.Name = "Split Data"
+    End If
+
+    ' Define the range containing your data in the source sheet
+    Set dataRange = wsSource.Range("A1").CurrentRegion ' Includes all rows and columns in the current region of A1
+    
+    ' Sort the data in the source range based on column A
+    dataRange.Sort key1:=wsSource.Range("A1"), order1:=xlAscending, Header:=xlNo
+
+    ' Clear contents of destination sheet before moving data
+    wsDest.Cells.Clear
+
+    ' Initialize variables
+    lastRow = 1
+    currentPrefix = Left(dataRange.Cells(1, 1).Value, 2)
+    rowCount = 0
+
+    ' Loop through each cell in the sorted range, starting from the first row
+    For i = 1 To dataRange.Rows.Count
+        Set cell = dataRange.Cells(i, 1)
+
+        ' Check if the prefix of the current cell is different from the previous cell
+        If Left(cell.Value, 2) <> currentPrefix Then
+            ' Insert an empty line
+            wsDest.Rows(lastRow + rowCount).Insert Shift:=xlDown
+
+            ' Update the current prefix
+            currentPrefix = Left(cell.Value, 2)
+
+            ' Update last row and reset rowCount
+            lastRow = lastRow + rowCount + 1
+            rowCount = 0
+        End If
+
+        ' Copy the entire row to the next available row in the destination sheet
+        cell.EntireRow.Copy wsDest.Rows(lastRow + rowCount)
+
+        ' Increment rowCount
+        rowCount = rowCount + 1
+    Next i
+  ' Insert a new row at the first row
+    wsDest.Rows("1:1").Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    ' Auto fit columns in the destination sheet
+    wsDest.Columns.AutoFit
+End Sub
+
+Sub CopyHeadingRowToSplitData()
+    Dim wsInputFile As Worksheet
+    Dim wsSplitData As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    
+    ' Define worksheets
+    Set wsInputFile = ThisWorkbook.Sheets("InputFile")
+    Set wsSplitData = ThisWorkbook.Sheets("Split Data")
+    
+    ' Find the last row with data in InputFile sheet
+    lastRow = wsInputFile.Cells(wsInputFile.Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop through each row in InputFile
+    For i = 1 To lastRow
+        ' Check if the first cell in the row contains "Transaction Name"
+        If wsInputFile.Cells(i, 1).Value = "Transaction Name" Then
+            ' Clear existing data in Split Data sheet
+            wsSplitData.Rows(1).ClearContents
+            ' Copy the entire row to the first row of Split Data sheet
+            wsInputFile.Rows(i).Copy Destination:=wsSplitData.Rows(1)
+            ' Exit the loop after finding and copying the row
+            Exit For
+        End If
+    Next i
+     ' Insert empty row after the first row
+    wsSplitData.Rows(2).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+End Sub
+
+
+Sub DeleteColumnsStartingWithSLAStatus()
+    Dim ws As Worksheet
+    Dim lastCol As Long
+    Dim i As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Split Data") ' Replace "YourSheetName" with the name of your sheet
+    
+    ' Find the last column in the worksheet
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' Loop through each column
+    For i = lastCol To 1 Step -1
+        ' Trim and check if the column header starts with "SLA Status"
+        If Left(Trim(ws.Cells(1, i).Value), Len("SLA Status")) = "SLA Status" Then
+            ' Delete the entire column
+            ws.Columns(i).Delete
+        End If
+    Next i
+End Sub
+
+Sub DeleteColumnsStartingWithStop()
+    Dim ws As Worksheet
+    Dim lastCol As Long
+    Dim i As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Split Data") ' Replace "YourSheetName" with the name of your sheet
+    
+    ' Find the last column in the worksheet
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' Loop through each column
+    For i = lastCol To 1 Step -1
+        ' Trim and check if the column header starts with "Stop"
+        If Left(Trim(ws.Cells(1, i).Value), Len("Stop")) = "Stop" Then
+            ' Delete the entire column
+            ws.Columns(i).Delete
+        End If
+    Next i
+End Sub
+
+Sub FindAndColorEmptyRows()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim rowIsEmpty As Boolean
+    
+    ' Specify the sheet name
+    Set ws = ThisWorkbook.Sheets("Split Data") ' Replace "YourSheetName" with the name of your sheet
+    
+    ' Find the range with data
+    Set rng = ws.UsedRange
+    
+    ' Loop through each cell in the range and trim its value
+    For Each cell In rng
+        cell.Value = Application.Trim(cell.Value)
+    Next cell
+    
+    ' Find last row and column
+    lastRow = rng.Rows.Count
+    lastCol = rng.Columns.Count
+    
+    ' Loop through each row
+    For Each cell In rng.Rows
+        rowIsEmpty = True
+        ' Check if all cells in the row are empty
+        For i = 1 To lastCol
+            If Not IsEmpty(cell.Cells(1, i)) Then
+                rowIsEmpty = False
+                Exit For
+            End If
+        Next i
+        ' If row is empty, color cells in that row light green
+        If rowIsEmpty Then
+            cell.Interior.Color = RGB(204, 255, 204) ' Light green color (very light shade)
+        End If
+    Next cell
+     MsgBox "Transaction sheet generated in ""Split Data"" Sheet!", vbInformation
+End Sub
+
+
+Sub AutoFitDatainSplitDataSheet()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Split Data") ' Change "Sheet1" to your sheet name
+    
+    ' AutoFit columns
+    ws.Columns.AutoFit
+    
+    ' AutoFit rows
+    ws.Rows.AutoFit
+End Sub
