@@ -1,5 +1,5 @@
 
-helps to create cutom excel sheet from LR analysis default SUMMARY REPORT EXCEL ouput:
+Helps to create cutom excel sheet from LR analysis default SUMMARY REPORT EXCEL ouput:
 
 ==============================
 ==============================
