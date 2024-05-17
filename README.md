@@ -1,3 +1,8 @@
+
+help to create cutom excel sheet from LR analysis default SUMMARY REPORT EXCEL ouput:
+
+
+
 MainModule.vba: Main entry point containing the Sub aaaaaaaaaRunMeForAnalysisSheetGeneration() which orchestrates the execution of other subroutines.
 
 RenameSheetModule.vba: Contains the subroutine RenameSheetIfInvalid() for renaming sheets if invalid.
