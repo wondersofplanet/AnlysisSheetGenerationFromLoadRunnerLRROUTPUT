@@ -57,6 +57,8 @@ Sub RenameSheetIfInvalid()
                 randomNumber = Int((1000 - 1 + 1) * Rnd + 1)
                 newName = "DefaultSheetName " & randomNumber
                 MsgBox "Please run this script in the 'InputFile' sheet.", vbInformation
+                Err.Raise vbObjectError + 9999, , "-- Please run this script in the 'InputFile' sheet. End script and run it from InputFile sheet again, Thank you!--"
+                ShowMessageBoxWithOptions
             Else
                 newName = "InputFile"
             End If
@@ -501,7 +503,25 @@ Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
         wsStatistics.Columns("A:B").AutoFit
 End Sub
 
-
+Sub ShowMessageBoxWithOptions()
+    Dim userResponse As VbMsgBoxResult
+    
+    ' Display the message box with options
+    userResponse = MsgBox("Do you want to continue?", vbYesNoCancel + vbQuestion, "Continue?")
+    
+    ' Check the user's response and take action accordingly
+    Select Case userResponse
+        Case vbYes
+            MsgBox "You chose to continue.", vbInformation, "Continue"
+            ' Add your code to continue here
+        Case vbNo
+            MsgBox "You chose not to continue.", vbExclamation, "Stop"
+            ' Add your code to stop here
+        Case vbCancel
+            MsgBox "Operation canceled.", vbInformation, "Canceled"
+            ' Add your code for cancellation here
+    End Select
+End Sub
 Function ContainsNumber(ByVal inputString As String) As Boolean
     Dim i As Integer
     ContainsNumber = False
@@ -542,5 +562,4 @@ End Sub
 '----------------------------------
 '----------------------------------
 '----------------------------------
-
 
