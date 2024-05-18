@@ -6,12 +6,17 @@ Application.Wait Now + TimeValue("00:00:01")
 SortAndMoveData
 Application.Wait Now + TimeValue("00:00:01")
 CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname
+Application.Wait Now + TimeValue("00:00:01")
 CopyHeadingRowToSplitData
+Application.Wait Now + TimeValue("00:00:01")
 DeleteColumnsStartingWithSLAStatus
+Application.Wait Now + TimeValue("00:00:01")
 DeleteColumnsStartingWithStop
+Application.Wait Now + TimeValue("00:00:01")
 FindAndColorEmptyRows
 AutoFitDatainSplitDataSheet
-
+Application.Wait Now + TimeValue("00:00:01")
+RemoveConsecutiveEmptyRows
 End Sub
 
 
@@ -365,4 +370,27 @@ Function ExtractPattern(cellValue As String) As String
         ExtractPattern = ""
     End If
 End Function
+
+Sub RemoveConsecutiveEmptyRows()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+
+    'Specify the worksheet you want to work with
+    Set ws = ThisWorkbook.Sheets("Split Data")
+
+    'Find the last row with data in column A
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    'Loop through rows and remove consecutive empty rows
+    For i = lastRow To 2 Step -1
+        ' Check if the cell is empty or has no value and no interior color
+        If IsEmpty(ws.Cells(i, 1)) Or (ws.Cells(i, 1).Value = "" And ws.Cells(i, 1).Interior.ColorIndex = xlNone) Then
+            ' Check if the previous row is also empty or has no value and no interior color
+            If IsEmpty(ws.Cells(i - 1, 1)) Or (ws.Cells(i - 1, 1).Value = "" And ws.Cells(i - 1, 1).Interior.ColorIndex = xlNone) Then
+                ws.Rows(i).Delete
+            End If
+        End If
+    Next i
+End Sub
 
