@@ -119,19 +119,22 @@ End Sub
 
 
 
+
 Sub SortAndMoveData()
     Dim wsSource As Worksheet
     Dim wsDest As Worksheet
     Dim dataRange As Range
+    Dim extendedRange As Range
     Dim cell As Range
     Dim currentPrefix As String
     Dim lastRow As Long
     Dim rowCount As Long
     Dim i As Long
+    Dim sortColumn As Range
 
     ' Set the source worksheet
-    'Set wsSource = ActiveSheet ' Change to your source worksheet
-Set wsSource = ThisWorkbook.Sheets("txsummary")
+    Set wsSource = ThisWorkbook.Sheets("txsummary")
+
     ' Check if the destination worksheet "Split Data" exists, otherwise create it
     On Error Resume Next
     Set wsDest = ThisWorkbook.Sheets("Split Data")
@@ -146,15 +149,27 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
     ' Define the range containing your data in the source sheet
     Set dataRange = wsSource.Range("A1").CurrentRegion ' Includes all rows and columns in the current region of A1
     
-    ' Sort the data in the source range based on column A
-    dataRange.Sort key1:=wsSource.Range("A1"), order1:=xlAscending, Header:=xlNo
+    ' Add a new column for sorting
+    wsSource.Columns("Z").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+    Set sortColumn = wsSource.Range("Z1:Z" & dataRange.Rows.Count)
+
+    ' Populate the sort column with values ignoring leading zeros
+    For i = 1 To dataRange.Rows.Count
+        sortColumn.Cells(i, 1).Value = Val(dataRange.Cells(i, 1).Value)
+    Next i
+
+    ' Define an extended range that includes the new sort column
+    Set extendedRange = wsSource.Range(dataRange, wsSource.Cells(dataRange.Rows.Count, "Z"))
+
+    ' Sort the data in the extended range based on the new sort column
+    extendedRange.Sort key1:=wsSource.Range("Z1"), order1:=xlAscending, Header:=xlNo
 
     ' Clear contents of destination sheet before moving data
     wsDest.Cells.Clear
 
     ' Initialize variables
     lastRow = 1
-    currentPrefix = Left(dataRange.Cells(1, 1).Value, 2)
+    currentPrefix = Left(dataRange.Cells(1, 1).Value, 3)
     rowCount = 0
 
     ' Loop through each cell in the sorted range, starting from the first row
@@ -162,12 +177,12 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
         Set cell = dataRange.Cells(i, 1)
 
         ' Check if the prefix of the current cell is different from the previous cell
-        If Left(cell.Value, 2) <> currentPrefix Then
+        If Left(cell.Value, 3) <> currentPrefix Then
             ' Insert an empty line
             wsDest.Rows(lastRow + rowCount).Insert Shift:=xlDown
 
             ' Update the current prefix
-            currentPrefix = Left(cell.Value, 2)
+            currentPrefix = Left(cell.Value, 3)
 
             ' Update last row and reset rowCount
             lastRow = lastRow + rowCount + 1
@@ -180,11 +195,20 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
         ' Increment rowCount
         rowCount = rowCount + 1
     Next i
-  ' Insert a new row at the first row
+
+    ' Insert a new row at the first row
     wsDest.Rows("1:1").Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+
     ' Auto fit columns in the destination sheet
     wsDest.Columns.AutoFit
+
+    ' Remove the sort column
+    wsSource.Columns("Z").Delete
 End Sub
+
+
+
+
 
 Sub CopyHeadingRowToSplitData()
     Dim wsInputFile As Worksheet
