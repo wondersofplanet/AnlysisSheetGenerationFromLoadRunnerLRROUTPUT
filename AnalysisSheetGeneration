@@ -2,7 +2,10 @@ Sub aaaaaaaaaRunMeForAnalysisSheetGeneration()
 
 RenameSheetIfInvalid
 CopyTransactionSummary
+Application.Wait Now + TimeValue("00:00:01")
 SortAndMoveData
+Application.Wait Now + TimeValue("00:00:01")
+CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname
 CopyHeadingRowToSplitData
 DeleteColumnsStartingWithSLAStatus
 DeleteColumnsStartingWithStop
@@ -119,22 +122,19 @@ End Sub
 
 
 
-
 Sub SortAndMoveData()
     Dim wsSource As Worksheet
     Dim wsDest As Worksheet
     Dim dataRange As Range
-    Dim extendedRange As Range
     Dim cell As Range
     Dim currentPrefix As String
     Dim lastRow As Long
     Dim rowCount As Long
     Dim i As Long
-    Dim sortColumn As Range
 
     ' Set the source worksheet
-    Set wsSource = ThisWorkbook.Sheets("txsummary")
-
+    'Set wsSource = ActiveSheet ' Change to your source worksheet
+Set wsSource = ThisWorkbook.Sheets("txsummary")
     ' Check if the destination worksheet "Split Data" exists, otherwise create it
     On Error Resume Next
     Set wsDest = ThisWorkbook.Sheets("Split Data")
@@ -149,27 +149,15 @@ Sub SortAndMoveData()
     ' Define the range containing your data in the source sheet
     Set dataRange = wsSource.Range("A1").CurrentRegion ' Includes all rows and columns in the current region of A1
     
-    ' Add a new column for sorting
-    wsSource.Columns("Z").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
-    Set sortColumn = wsSource.Range("Z1:Z" & dataRange.Rows.Count)
-
-    ' Populate the sort column with values ignoring leading zeros
-    For i = 1 To dataRange.Rows.Count
-        sortColumn.Cells(i, 1).Value = Val(dataRange.Cells(i, 1).Value)
-    Next i
-
-    ' Define an extended range that includes the new sort column
-    Set extendedRange = wsSource.Range(dataRange, wsSource.Cells(dataRange.Rows.Count, "Z"))
-
-    ' Sort the data in the extended range based on the new sort column
-    extendedRange.Sort key1:=wsSource.Range("Z1"), order1:=xlAscending, Header:=xlNo
+    ' Sort the data in the source range based on column A
+    dataRange.Sort key1:=wsSource.Range("A1"), order1:=xlAscending, Header:=xlNo
 
     ' Clear contents of destination sheet before moving data
     wsDest.Cells.Clear
 
     ' Initialize variables
     lastRow = 1
-    currentPrefix = Left(dataRange.Cells(1, 1).Value, 3)
+    currentPrefix = Left(dataRange.Cells(1, 1).Value, 2)
     rowCount = 0
 
     ' Loop through each cell in the sorted range, starting from the first row
@@ -177,12 +165,12 @@ Sub SortAndMoveData()
         Set cell = dataRange.Cells(i, 1)
 
         ' Check if the prefix of the current cell is different from the previous cell
-        If Left(cell.Value, 3) <> currentPrefix Then
+        If Left(cell.Value, 2) <> currentPrefix Then
             ' Insert an empty line
             wsDest.Rows(lastRow + rowCount).Insert Shift:=xlDown
 
             ' Update the current prefix
-            currentPrefix = Left(cell.Value, 3)
+            currentPrefix = Left(cell.Value, 2)
 
             ' Update last row and reset rowCount
             lastRow = lastRow + rowCount + 1
@@ -195,20 +183,11 @@ Sub SortAndMoveData()
         ' Increment rowCount
         rowCount = rowCount + 1
     Next i
-
-    ' Insert a new row at the first row
+  ' Insert a new row at the first row
     wsDest.Rows("1:1").Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
-
     ' Auto fit columns in the destination sheet
     wsDest.Columns.AutoFit
-
-    ' Remove the sort column
-    wsSource.Columns("Z").Delete
 End Sub
-
-
-
-
 
 Sub CopyHeadingRowToSplitData()
     Dim wsInputFile As Worksheet
@@ -334,3 +313,56 @@ Sub AutoFitDatainSplitDataSheet()
     ' AutoFit rows
     ws.Rows.AutoFit
 End Sub
+
+Sub CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Split Data") ' Change "Sheet1" to "Split Data"
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    Dim i As Long
+    
+    ' Loop through rows from the bottom up
+    For i = lastRow To 2 Step -1
+        Dim currentPattern As String
+        Dim previousPattern As String
+        Dim rowAbovePrevious As String
+        
+        currentPattern = ExtractPattern(ws.Cells(i, 1).Value)
+        previousPattern = ExtractPattern(ws.Cells(i - 1, 1).Value)
+        
+        If i > 2 Then
+            rowAbovePrevious = ws.Cells(i - 2, 1).Value
+        Else
+            rowAbovePrevious = "" ' Set rowAbovePrevious to empty string if i is less than or equal to 2
+        End If
+        
+        If currentPattern <> previousPattern Then
+            ' Check if the previous row and the row above the previous row are not already empty
+            If ws.Cells(i - 1, 1).Value <> "" And rowAbovePrevious <> "" Then
+                ws.Rows(i).Insert Shift:=xlDown
+            End If
+        End If
+    Next i
+End Sub
+
+Function ExtractPattern(cellValue As String) As String
+    Dim regex As Object
+    Set regex = CreateObject("VBScript.RegExp")
+    regex.Global = True
+    regex.Pattern = "\d+"
+    
+    Dim matches As Object
+    Set matches = regex.Execute(cellValue)
+    
+    If matches.Count >= 2 Then
+        ' Return text between the first and second occurrence of numbers
+        Dim startPos As Long
+        Dim endPos As Long
+        startPos = InStr(cellValue, matches(0).Value) + Len(matches(0).Value)
+        endPos = InStr(startPos, cellValue, matches(1).Value)
+        ExtractPattern = Mid(cellValue, startPos, endPos - startPos)
+    Else
+        ExtractPattern = ""
+    End If
+End Function
+
