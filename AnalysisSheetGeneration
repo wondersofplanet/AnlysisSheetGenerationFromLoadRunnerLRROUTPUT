@@ -1,22 +1,43 @@
 Sub aaaaaaaaaRunMeForAnalysisSheetGeneration()
 
 RenameSheetIfInvalid
+
 CopyTransactionSummary
+
 Application.Wait Now + TimeValue("00:00:01")
+
 SortAndMoveData
+
 Application.Wait Now + TimeValue("00:00:01")
+
 CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname
+
 Application.Wait Now + TimeValue("00:00:01")
+
 CopyHeadingRowToSplitData
+
 Application.Wait Now + TimeValue("00:00:01")
+
 DeleteColumnsStartingWithSLAStatus
+
 Application.Wait Now + TimeValue("00:00:01")
+
 DeleteColumnsStartingWithStop
+
 Application.Wait Now + TimeValue("00:00:01")
+
 FindAndColorEmptyRows
+
 AutoFitDatainSplitDataSheet
+
 Application.Wait Now + TimeValue("00:00:01")
+
 RemoveConsecutiveEmptyRows
+
+Application.Wait Now + TimeValue("00:00:01")
+
+FindValueforGivenFieldsAndPasteInStatisticsSheet
+
 End Sub
 
 
@@ -102,7 +123,7 @@ Sub CopyTransactionSummary()
         For copyEndRow = rngTransaction.Row + 1 To lastRow
             Set cell = wsSource.Cells(copyEndRow, rngTransaction.Column)
             ' Trim the content and check if the cell is empty
-            If Trim(cell.Value) = "" Then
+            If Trim(cell.value) = "" Then
                 Exit For
             End If
         Next copyEndRow
@@ -162,7 +183,7 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
 
     ' Initialize variables
     lastRow = 1
-    currentPrefix = Left(dataRange.Cells(1, 1).Value, 2)
+    currentPrefix = Left(dataRange.Cells(1, 1).value, 2)
     rowCount = 0
 
     ' Loop through each cell in the sorted range, starting from the first row
@@ -170,12 +191,12 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
         Set cell = dataRange.Cells(i, 1)
 
         ' Check if the prefix of the current cell is different from the previous cell
-        If Left(cell.Value, 2) <> currentPrefix Then
+        If Left(cell.value, 2) <> currentPrefix Then
             ' Insert an empty line
             wsDest.Rows(lastRow + rowCount).Insert Shift:=xlDown
 
             ' Update the current prefix
-            currentPrefix = Left(cell.Value, 2)
+            currentPrefix = Left(cell.value, 2)
 
             ' Update last row and reset rowCount
             lastRow = lastRow + rowCount + 1
@@ -210,7 +231,7 @@ Sub CopyHeadingRowToSplitData()
     ' Loop through each row in InputFile
     For i = 1 To lastRow
         ' Check if the first cell in the row contains "Transaction Name"
-        If wsInputFile.Cells(i, 1).Value = "Transaction Name" Then
+        If wsInputFile.Cells(i, 1).value = "Transaction Name" Then
             ' Clear existing data in Split Data sheet
             wsSplitData.Rows(1).ClearContents
             ' Copy the entire row to the first row of Split Data sheet
@@ -238,7 +259,7 @@ Sub DeleteColumnsStartingWithSLAStatus()
     ' Loop through each column
     For i = lastCol To 1 Step -1
         ' Trim and check if the column header starts with "SLA Status"
-        If Left(Trim(ws.Cells(1, i).Value), Len("SLA Status")) = "SLA Status" Then
+        If Left(Trim(ws.Cells(1, i).value), Len("SLA Status")) = "SLA Status" Then
             ' Delete the entire column
             ws.Columns(i).Delete
         End If
@@ -259,7 +280,7 @@ Sub DeleteColumnsStartingWithStop()
     ' Loop through each column
     For i = lastCol To 1 Step -1
         ' Trim and check if the column header starts with "Stop"
-        If Left(Trim(ws.Cells(1, i).Value), Len("Stop")) = "Stop" Then
+        If Left(Trim(ws.Cells(1, i).value), Len("Stop")) = "Stop" Then
             ' Delete the entire column
             ws.Columns(i).Delete
         End If
@@ -282,7 +303,7 @@ Sub FindAndColorEmptyRows()
     
     ' Loop through each cell in the range and trim its value
     For Each cell In rng
-        cell.Value = Application.Trim(cell.Value)
+        cell.value = Application.Trim(cell.value)
     Next cell
     
     ' Find last row and column
@@ -332,18 +353,18 @@ Sub CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname()
         Dim previousPattern As String
         Dim rowAbovePrevious As String
         
-        currentPattern = ExtractPattern(ws.Cells(i, 1).Value)
-        previousPattern = ExtractPattern(ws.Cells(i - 1, 1).Value)
+        currentPattern = ExtractPattern(ws.Cells(i, 1).value)
+        previousPattern = ExtractPattern(ws.Cells(i - 1, 1).value)
         
         If i > 2 Then
-            rowAbovePrevious = ws.Cells(i - 2, 1).Value
+            rowAbovePrevious = ws.Cells(i - 2, 1).value
         Else
             rowAbovePrevious = "" ' Set rowAbovePrevious to empty string if i is less than or equal to 2
         End If
         
         If currentPattern <> previousPattern Then
             ' Check if the previous row and the row above the previous row are not already empty
-            If ws.Cells(i - 1, 1).Value <> "" And rowAbovePrevious <> "" Then
+            If ws.Cells(i - 1, 1).value <> "" And rowAbovePrevious <> "" Then
                 ws.Rows(i).Insert Shift:=xlDown
             End If
         End If
@@ -363,8 +384,8 @@ Function ExtractPattern(cellValue As String) As String
         ' Return text between the first and second occurrence of numbers
         Dim startPos As Long
         Dim endPos As Long
-        startPos = InStr(cellValue, matches(0).Value) + Len(matches(0).Value)
-        endPos = InStr(startPos, cellValue, matches(1).Value)
+        startPos = InStr(cellValue, matches(0).value) + Len(matches(0).value)
+        endPos = InStr(startPos, cellValue, matches(1).value)
         ExtractPattern = Mid(cellValue, startPos, endPos - startPos)
     Else
         ExtractPattern = ""
@@ -385,12 +406,141 @@ Sub RemoveConsecutiveEmptyRows()
     'Loop through rows and remove consecutive empty rows
     For i = lastRow To 2 Step -1
         ' Check if the cell is empty or has no value and no interior color
-        If IsEmpty(ws.Cells(i, 1)) Or (ws.Cells(i, 1).Value = "" And ws.Cells(i, 1).Interior.ColorIndex = xlNone) Then
+        If IsEmpty(ws.Cells(i, 1)) Or (ws.Cells(i, 1).value = "" And ws.Cells(i, 1).Interior.ColorIndex = xlNone) Then
             ' Check if the previous row is also empty or has no value and no interior color
-            If IsEmpty(ws.Cells(i - 1, 1)) Or (ws.Cells(i - 1, 1).Value = "" And ws.Cells(i - 1, 1).Interior.ColorIndex = xlNone) Then
+            If IsEmpty(ws.Cells(i - 1, 1)) Or (ws.Cells(i - 1, 1).value = "" And ws.Cells(i - 1, 1).Interior.ColorIndex = xlNone) Then
                 ws.Rows(i).Delete
             End If
         End If
     Next i
 End Sub
+
+
+
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+
+
+
+Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
+    Dim wsInput As Worksheet
+    Dim wsStatistics As Worksheet
+    Dim rowNum As Long
+    Dim neededData As Variant
+    Dim i As Long
+    Dim foundCell As Range
+    Dim existingRow As Long
+    
+    ' Check if Statistics sheet exists, if not, create it
+    On Error Resume Next
+    Set wsStatistics = Worksheets("Statistics")
+    On Error GoTo 0
+    If wsStatistics Is Nothing Then
+        Set wsStatistics = ThisWorkbook.Worksheets.Add
+        wsStatistics.Name = "Statistics"
+    End If
+    
+    ' Set reference to InputFile sheet
+    On Error Resume Next
+    Set wsInput = Worksheets("InputFile")
+    On Error GoTo 0
+    
+    If wsInput Is Nothing Then
+        MsgBox "InputFile sheet not found."
+        Exit Sub
+    End If
+    
+    ' Trim all cell values in the InputFile sheet
+    For Each cell In wsInput.UsedRange
+        If Not IsEmpty(cell) Then
+            cell.value = Trim(cell.value)
+        End If
+    Next cell
+    
+    ' Trim the search value
+    searchValue = Trim(searchValue)
+    
+    ' Find searchValue and note down the row number
+    With wsInput
+        Set foundCell = .Cells.Find(What:=searchValue, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False, SearchFormat:=False)
+        If foundCell Is Nothing Then
+            MsgBox searchValue & " not found in InputFile sheet."
+            Exit Sub
+        End If
+        rowNum = foundCell.Row
+    End With
+    
+    ' Find the needed data in the row (trimming each cell value)
+    With wsInput
+        For i = 1 To .Columns.Count
+            If ContainsNumber(Trim(.Cells(rowNum, i).value)) Then
+                neededData = .Cells(rowNum, i).value
+                Exit For
+            End If
+        Next i
+    End With
+    
+    ' Check if data already exists in the Statistics sheet
+    With wsStatistics
+        Set foundCell = .Columns("A").Find(What:=searchValue, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False, SearchFormat:=False)
+        If foundCell Is Nothing Then
+            ' If data doesn't exist, find the first empty row
+            existingRow = .Cells(.Rows.Count, "A").End(xlUp).Row + 1
+        Else
+            ' If data exists, update the existing row
+            existingRow = foundCell.Row
+        End If
+        .Cells(existingRow, "A").value = searchValue
+        .Cells(existingRow, "B").value = neededData
+    End With
+     ' Autofit columns after pasting data
+        wsStatistics.Columns("A:B").AutoFit
+End Sub
+
+
+Function ContainsNumber(ByVal inputString As String) As Boolean
+    Dim i As Integer
+    ContainsNumber = False
+    For i = 1 To Len(inputString)
+        If IsNumeric(Mid(inputString, i, 1)) Then
+            ContainsNumber = True
+            Exit Function
+        End If
+    Next i
+End Function
+
+'Maximum Running Vusers
+'Total Throughput
+'Average Throughput
+'Average Hits per Second
+'Total Hits
+'Passed Transactions Ratio
+
+Sub FindValueforGivenFieldsAndPasteInStatisticsSheet()
+
+   
+    FindValueforAndPasteInStatisticsSheet "Maximum Running Vusers"
+    FindValueforAndPasteInStatisticsSheet "Total Throughput "
+    FindValueforAndPasteInStatisticsSheet "Average Throughput"
+    FindValueforAndPasteInStatisticsSheet "Total Hits"
+    FindValueforAndPasteInStatisticsSheet "Average Hits per Second"
+    MsgBox "Completed Processing!", vbExclamation
+End Sub
+
+
+
+
+
+
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------
+
 
