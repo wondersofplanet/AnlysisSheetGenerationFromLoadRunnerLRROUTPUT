@@ -38,6 +38,9 @@ Application.Wait Now + TimeValue("00:00:01")
 
 FindValueforGivenFieldsAndPasteInStatisticsSheet
 
+Application.Wait Now + TimeValue("00:00:01")
+
+AlignColoredCellsToCenterSpecificSheet
 End Sub
 
 
@@ -125,7 +128,7 @@ Sub CopyTransactionSummary()
         For copyEndRow = rngTransaction.Row + 1 To lastRow
             Set cell = wsSource.Cells(copyEndRow, rngTransaction.Column)
             ' Trim the content and check if the cell is empty
-            If Trim(cell.value) = "" Then
+            If Trim(cell.Value) = "" Then
                 Exit For
             End If
         Next copyEndRow
@@ -185,7 +188,7 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
 
     ' Initialize variables
     lastRow = 1
-    currentPrefix = Left(dataRange.Cells(1, 1).value, 2)
+    currentPrefix = Left(dataRange.Cells(1, 1).Value, 2)
     rowCount = 0
 
     ' Loop through each cell in the sorted range, starting from the first row
@@ -193,12 +196,12 @@ Set wsSource = ThisWorkbook.Sheets("txsummary")
         Set cell = dataRange.Cells(i, 1)
 
         ' Check if the prefix of the current cell is different from the previous cell
-        If Left(cell.value, 2) <> currentPrefix Then
+        If Left(cell.Value, 2) <> currentPrefix Then
             ' Insert an empty line
             wsDest.Rows(lastRow + rowCount).Insert Shift:=xlDown
 
             ' Update the current prefix
-            currentPrefix = Left(cell.value, 2)
+            currentPrefix = Left(cell.Value, 2)
 
             ' Update last row and reset rowCount
             lastRow = lastRow + rowCount + 1
@@ -233,7 +236,7 @@ Sub CopyHeadingRowToSplitData()
     ' Loop through each row in InputFile
     For i = 1 To lastRow
         ' Check if the first cell in the row contains "Transaction Name"
-        If wsInputFile.Cells(i, 1).value = "Transaction Name" Then
+        If wsInputFile.Cells(i, 1).Value = "Transaction Name" Then
             ' Clear existing data in Split Data sheet
             wsSplitData.Rows(1).ClearContents
             ' Copy the entire row to the first row of Split Data sheet
@@ -261,7 +264,7 @@ Sub DeleteColumnsStartingWithSLAStatus()
     ' Loop through each column
     For i = lastCol To 1 Step -1
         ' Trim and check if the column header starts with "SLA Status"
-        If Left(Trim(ws.Cells(1, i).value), Len("SLA Status")) = "SLA Status" Then
+        If Left(Trim(ws.Cells(1, i).Value), Len("SLA Status")) = "SLA Status" Then
             ' Delete the entire column
             ws.Columns(i).Delete
         End If
@@ -282,7 +285,7 @@ Sub DeleteColumnsStartingWithStop()
     ' Loop through each column
     For i = lastCol To 1 Step -1
         ' Trim and check if the column header starts with "Stop"
-        If Left(Trim(ws.Cells(1, i).value), Len("Stop")) = "Stop" Then
+        If Left(Trim(ws.Cells(1, i).Value), Len("Stop")) = "Stop" Then
             ' Delete the entire column
             ws.Columns(i).Delete
         End If
@@ -301,11 +304,11 @@ Sub FindAndColorEmptyRows()
     Set ws = ThisWorkbook.Sheets("Split Data") ' Replace "YourSheetName" with the name of your sheet
     
     ' Find the range with data
-    Set rng = ws.UsedRange
+    Set rng = ws.usedRange
     
     ' Loop through each cell in the range and trim its value
     For Each cell In rng
-        cell.value = Application.Trim(cell.value)
+        cell.Value = Application.Trim(cell.Value)
     Next cell
     
     ' Find last row and column
@@ -355,18 +358,18 @@ Sub CheckAndInsertEmptyRowsBasedOnTextPatternBetweenTwoNumbersInTXname()
         Dim previousPattern As String
         Dim rowAbovePrevious As String
         
-        currentPattern = ExtractPattern(ws.Cells(i, 1).value)
-        previousPattern = ExtractPattern(ws.Cells(i - 1, 1).value)
+        currentPattern = ExtractPattern(ws.Cells(i, 1).Value)
+        previousPattern = ExtractPattern(ws.Cells(i - 1, 1).Value)
         
         If i > 2 Then
-            rowAbovePrevious = ws.Cells(i - 2, 1).value
+            rowAbovePrevious = ws.Cells(i - 2, 1).Value
         Else
             rowAbovePrevious = "" ' Set rowAbovePrevious to empty string if i is less than or equal to 2
         End If
         
         If currentPattern <> previousPattern Then
             ' Check if the previous row and the row above the previous row are not already empty
-            If ws.Cells(i - 1, 1).value <> "" And rowAbovePrevious <> "" Then
+            If ws.Cells(i - 1, 1).Value <> "" And rowAbovePrevious <> "" Then
                 ws.Rows(i).Insert Shift:=xlDown
             End If
         End If
@@ -386,8 +389,8 @@ Function ExtractPattern(cellValue As String) As String
         ' Return text between the first and second occurrence of numbers
         Dim startPos As Long
         Dim endPos As Long
-        startPos = InStr(cellValue, matches(0).value) + Len(matches(0).value)
-        endPos = InStr(startPos, cellValue, matches(1).value)
+        startPos = InStr(cellValue, matches(0).Value) + Len(matches(0).Value)
+        endPos = InStr(startPos, cellValue, matches(1).Value)
         ExtractPattern = Mid(cellValue, startPos, endPos - startPos)
     Else
         ExtractPattern = ""
@@ -408,9 +411,9 @@ Sub RemoveConsecutiveEmptyRows()
     'Loop through rows and remove consecutive empty rows
     For i = lastRow To 2 Step -1
         ' Check if the cell is empty or has no value and no interior color
-        If IsEmpty(ws.Cells(i, 1)) Or (ws.Cells(i, 1).value = "" And ws.Cells(i, 1).Interior.ColorIndex = xlNone) Then
+        If IsEmpty(ws.Cells(i, 1)) Or (ws.Cells(i, 1).Value = "" And ws.Cells(i, 1).Interior.ColorIndex = xlNone) Then
             ' Check if the previous row is also empty or has no value and no interior color
-            If IsEmpty(ws.Cells(i - 1, 1)) Or (ws.Cells(i - 1, 1).value = "" And ws.Cells(i - 1, 1).Interior.ColorIndex = xlNone) Then
+            If IsEmpty(ws.Cells(i - 1, 1)) Or (ws.Cells(i - 1, 1).Value = "" And ws.Cells(i - 1, 1).Interior.ColorIndex = xlNone) Then
                 ws.Rows(i).Delete
             End If
         End If
@@ -457,9 +460,9 @@ Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
     End If
     
     ' Trim all cell values in the InputFile sheet
-    For Each cell In wsInput.UsedRange
+    For Each cell In wsInput.usedRange
         If Not IsEmpty(cell) Then
-            cell.value = Trim(cell.value)
+            cell.Value = Trim(cell.Value)
         End If
     Next cell
     
@@ -479,8 +482,8 @@ Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
     ' Find the needed data in the row (trimming each cell value)
     With wsInput
         For i = 1 To .Columns.Count
-            If ContainsNumber(Trim(.Cells(rowNum, i).value)) Then
-                neededData = .Cells(rowNum, i).value
+            If ContainsNumber(Trim(.Cells(rowNum, i).Value)) Then
+                neededData = .Cells(rowNum, i).Value
                 Exit For
             End If
         Next i
@@ -496,8 +499,8 @@ Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
             ' If data exists, update the existing row
             existingRow = foundCell.Row
         End If
-        .Cells(existingRow, "A").value = searchValue
-        .Cells(existingRow, "B").value = neededData
+        .Cells(existingRow, "A").Value = searchValue
+        .Cells(existingRow, "B").Value = neededData
     End With
      ' Autofit columns after pasting data
         wsStatistics.Columns("A:B").AutoFit
@@ -563,3 +566,28 @@ End Sub
 '----------------------------------
 '----------------------------------
 
+Sub AlignColoredCellsToCenterSpecificSheet()
+    Dim ws As Worksheet
+    Dim cell As Range
+    Dim usedRange As Range
+    Dim sheetName As String
+    
+    ' Specify the name of the worksheet you want to target
+    sheetName = "YourSheetName"
+    
+    ' Set the worksheet object
+    Set ws = ThisWorkbook.Sheets("Split Data")
+    
+    ' Get the used range of the worksheet
+    Set usedRange = ws.usedRange
+    
+    ' Loop through each cell in the used range
+    For Each cell In usedRange
+        ' Check if the cell has a fill color
+        If cell.Interior.ColorIndex <> -4142 Then
+            ' Center align the cell content horizontally and vertically
+            cell.HorizontalAlignment = xlCenter
+            cell.VerticalAlignment = xlCenter
+        End If
+    Next cell
+End Sub
