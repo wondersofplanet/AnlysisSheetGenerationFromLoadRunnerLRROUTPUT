@@ -491,7 +491,7 @@ Sub FindValueforAndPasteInStatisticsSheet(ByVal searchValue As String)
     
     ' Check if data already exists in the Statistics sheet
     With wsStatistics
-        Set foundCell = .Columns("A").Find(What:=searchValue, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False, SearchFormat:=False)
+        Set foundCell = .Columns("A").Find(What:=searchValue, LookIn:=xlValues, LookAt:=xlPart, MatchCase:=False, SearchFormat:=False)
         If foundCell Is Nothing Then
             ' If data doesn't exist, find the first empty row
             existingRow = .Cells(.Rows.Count, "A").End(xlUp).Row + 1
