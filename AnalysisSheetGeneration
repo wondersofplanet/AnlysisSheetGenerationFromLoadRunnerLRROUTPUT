@@ -102,7 +102,13 @@ Sub CopyTransactionSummary()
     
     ' Set the source worksheet
     Set wsSource = ThisWorkbook.Sheets("InputFile") ' Change to your source worksheet
+     
+    ' AutoFit all columns
+    wsSource.Columns.AutoFit
     
+    ' AutoFit all rows
+    wsSource.Rows.AutoFit
+
     ' Find the cell containing the text "Transaction Name" in the source worksheet
     Set rngTransaction = wsSource.Cells.Find(What:="Transaction Name", LookIn:=xlValues, LookAt:=xlWhole)
     
