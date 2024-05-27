@@ -546,12 +546,29 @@ End Function
 Sub FindValueforGivenFieldsAndPasteInStatisticsSheet()
 
    
+  
     FindValueforAndPasteInStatisticsSheet "Maximum Running Vusers"
-    FindValueforAndPasteInStatisticsSheet "Total Throughput "
-    FindValueforAndPasteInStatisticsSheet "Average Throughput"
+	
+	Application.Wait Now + TimeValue("00:00:01")
+	
+    FindValueforAndPasteInStatisticsSheet "Total Throughput (bytes)"
+	
+	Application.Wait Now + TimeValue("00:00:01")
+	
+    FindValueforAndPasteInStatisticsSheet "Average Throughput (B/s)"
+	
+	Application.Wait Now + TimeValue("00:00:01")
+	
     FindValueforAndPasteInStatisticsSheet "Total Hits"
+	
+	Application.Wait Now + TimeValue("00:00:01")
+	
     FindValueforAndPasteInStatisticsSheet "Average Hits per Second"
+	
+	Application.Wait Now + TimeValue("00:00:01")
+	
     MsgBox "Completed Processing!", vbExclamation
+
 End Sub
 
 
