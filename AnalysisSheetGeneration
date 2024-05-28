@@ -57,6 +57,10 @@ Application.Wait Now + TimeValue("00:00:01")
 
 SetA9InteriorColorINfinaloutSHEET
 
+Application.Wait Now + TimeValue("00:00:01")
+
+MergeAndCenterInA3FinalOutSheet
+
 
 End Sub
 
@@ -776,5 +780,27 @@ End Sub
 
 '----------------------------------
 '----------------------------------
+
+
+
+
+Sub MergeAndCenterInA3FinalOutSheet()
+    ' Specify the worksheet where you want to perform the merge and center operation
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("finalout")
+    
+    ' Merge cells A3 and B3 in the specified worksheet
+    With ws
+        .Range("A3:B3").Merge
+        .Range("A3:B3").HorizontalAlignment = xlCenter
+    End With
+End Sub
+
+
+
+
+'----------------------------------
+'----------------------------------
+
 
 
