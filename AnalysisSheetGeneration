@@ -711,7 +711,7 @@ Sub CreatefinaloutsHEET()
     Next i
 
     ' Set content in cells A1, A2, and A3
-    ws.Range("A1").Value = "Test duration"
+    ws.Range("A1").Value = "Test Period"
     ws.Range("A2").Value = "Duration:"
     ws.Range("A3").Value = "Statistics Summary"
     ws.Range("A3:B3").Interior.Color = RGB(0, 0, 139) ' Darkest blue color
