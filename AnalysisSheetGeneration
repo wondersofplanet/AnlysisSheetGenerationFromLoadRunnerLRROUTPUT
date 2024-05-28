@@ -61,6 +61,9 @@ Application.Wait Now + TimeValue("00:00:01")
 
 MergeAndCenterInA3FinalOutSheet
 
+Application.Wait Now + TimeValue("00:00:01")
+
+CopyDurationFromInputFileSheettofinaloutSheet
 
 End Sub
 
@@ -802,5 +805,32 @@ End Sub
 '----------------------------------
 '----------------------------------
 
+Sub CopyDurationFromInputFileSheettofinaloutSheet()
+    Dim inputSheet As Worksheet
+    Dim finalOutSheet As Worksheet
+    Dim durationCell As Range
+    Dim copyRange As Range
+    
+    ' Set references to the InputFile and finalout sheets
+    Set inputSheet = ThisWorkbook.Sheets("InputFile")
+    Set finalOutSheet = ThisWorkbook.Sheets("finalout")
+    
+    ' Find the cell containing "Duration" in the InputFile sheet
+    Set durationCell = inputSheet.Cells.Find(What:="Duration", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    ' Check if "Duration" cell is found
+    If Not durationCell Is Nothing Then
+        ' Set the range to copy (from the cell to its right)
+        Set copyRange = durationCell.Offset(0, 1)
+        
+        ' Copy the data to finalout sheet C3 cell
+        finalOutSheet.Range("B2").Value = copyRange.Value
+    Else
+        MsgBox "Duration not found in InputFile sheet."
+    End If
+End Sub
 
 
+
+'----------------------------------
+'----------------------------------
