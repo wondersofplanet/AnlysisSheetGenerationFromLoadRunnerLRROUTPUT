@@ -41,6 +41,23 @@ FindValueforGivenFieldsAndPasteInStatisticsSheet
 Application.Wait Now + TimeValue("00:00:01")
 
 AlignColoredCellsToCenterSpecificSheet
+
+Application.Wait Now + TimeValue("00:00:01")
+CreatefinaloutsHEET
+
+Application.Wait Now + TimeValue("00:00:01")
+
+CopyDatafromStatisticsTOfinalout
+
+Application.Wait Now + TimeValue("00:00:01")
+
+CopySplitDataToFinalOutSheet
+
+Application.Wait Now + TimeValue("00:00:01")
+
+SetA9InteriorColorINfinaloutSHEET
+
+
 End Sub
 
 
@@ -614,3 +631,150 @@ Sub AlignColoredCellsToCenterSpecificSheet()
         End If
     Next cell
 End Sub
+
+
+
+'----------------------------------
+'----------------------------------
+'----------------------------------
+'----------------------------------'----------------------------------
+'----------------------------------'----------------------------------
+'----------------------------------'----------------------------------
+'----------------------------------'----------------------------------
+'----------------------------------
+
+Sub CreatefinaloutsHEET()
+    Dim ws As Worksheet
+    Dim wsExists As Boolean
+    Dim wsName As String
+    Dim i As Integer
+
+    wsName = "finalout"
+    wsExists = False
+
+    ' Check if the sheet "finalout" already exists
+    On Error Resume Next
+    Set ws = ThisWorkbook.Sheets(wsName)
+    On Error GoTo 0
+
+    If Not ws Is Nothing Then
+        wsExists = True
+    End If
+
+    ' If the sheet exists, delete it
+    If wsExists Then
+        Application.DisplayAlerts = False
+        ws.Delete
+        Application.DisplayAlerts = True
+    End If
+
+    ' Create a new sheet named "finalout"
+    Set ws = ThisWorkbook.Sheets.Add
+    ws.Name = wsName
+
+    ' Merge columns B to I up to the 8th row
+    For i = 1 To 8
+        ws.Range(ws.Cells(i, 2), ws.Cells(i, 9)).Merge
+    Next i
+
+    ' Set content in cells A1, A2, and A3
+    ws.Range("A1").Value = "Test duration"
+    ws.Range("A2").Value = "Duration:"
+    ws.Range("A3").Value = "Statistics Summary"
+    ws.Range("A3:B3").Interior.Color = RGB(0, 0, 139) ' Darkest blue color
+    ws.Range("A3:B3").Font.Color = RGB(255, 255, 255) ' White text color
+    ws.Range("A3").HorizontalAlignment = xlCenter
+    ws.Range("A3").VerticalAlignment = xlCenter
+
+    ' Auto fit the entire sheet
+    ws.Columns.AutoFit
+    ws.Rows.AutoFit
+End Sub
+
+'----------------------------------
+'----------------------------------
+
+Sub CopyDatafromStatisticsTOfinalout()
+    Dim sourceSheet As Worksheet
+    Dim destinationSheet As Worksheet
+    Dim i As Integer
+    
+    ' Set the source and destination sheets
+    Set sourceSheet = ThisWorkbook.Sheets("Statistics")
+    Set destinationSheet = ThisWorkbook.Sheets("finalout")
+    
+    ' Copy data according to the rules
+    
+    ' Copy data from column A
+    For i = 2 To 6
+        destinationSheet.Cells(i + 2, 1).Value = sourceSheet.Cells(i, 1).Value
+    Next i
+    
+    ' Copy data from column B
+    For i = 2 To 6
+        destinationSheet.Cells(i + 2, 2).Value = sourceSheet.Cells(i, 2).Value
+    Next i
+    
+    ' You can extend this pattern for additional columns if needed
+End Sub
+
+
+'----------------------------------
+'----------------------------------
+Sub CopySplitDataToFinalOutSheet()
+    Dim sourceSheet As Worksheet
+    Dim finalOutSheet As Worksheet
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim i As Long
+    
+    ' Set source sheet
+    Set sourceSheet = ThisWorkbook.Sheets("Split Data")
+    
+    ' Set final output sheet
+    Set finalOutSheet = ThisWorkbook.Sheets("finalout")
+    
+    ' Find the last row with data in the source sheet
+    lastRow = sourceSheet.Cells(sourceSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Find the last column with data in row 9
+    lastCol = sourceSheet.Cells(9, sourceSheet.Columns.Count).End(xlToLeft).Column
+    
+    ' Copy data from Split Data sheet to finalout sheet
+    For i = 1 To lastRow
+        sourceSheet.Rows(i).Copy finalOutSheet.Rows(i + 8) ' Copy and paste to 9th row onwards in finalout sheet
+    Next i
+    
+    ' Auto fit columns in the finalout sheet
+    finalOutSheet.Columns.AutoFit
+    
+ 
+End Sub
+
+
+'----------------------------------
+'----------------------------------
+
+
+Sub SetA9InteriorColorINfinaloutSHEET()
+    Dim finalOutSheet As Worksheet
+    Dim lastColumn As Long
+    
+    Set finalOutSheet = ThisWorkbook.Sheets("finalout")
+    
+    With finalOutSheet
+        ' Find the last used column in the 9th row
+        lastColumn = .Cells(9, .Columns.Count).End(xlToLeft).Column
+        
+        ' Set interior color for the range from 9th row to lastColumn
+        .Range(.Cells(9, 1), .Cells(9, lastColumn)).Interior.Color = RGB(144, 238, 144) ' Light Green
+    End With
+End Sub
+
+
+
+
+'----------------------------------
+'----------------------------------
+
+
