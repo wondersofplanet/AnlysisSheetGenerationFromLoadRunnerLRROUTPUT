@@ -1,4 +1,4 @@
-Sub aaaaaaaaaRunMeForAnalysisSheetGeneration()
+Sub aaaaaaaaaaaaaaaaaaRunMeForAnalysisSheetGeneration()
 
 RenameSheetIfInvalid
 
@@ -43,6 +43,7 @@ Application.Wait Now + TimeValue("00:00:01")
 AlignColoredCellsToCenterSpecificSheet
 
 Application.Wait Now + TimeValue("00:00:01")
+
 CreatefinaloutsHEET
 
 Application.Wait Now + TimeValue("00:00:01")
@@ -67,6 +68,31 @@ CopyDurationFromInputFileSheettofinaloutSheet
 
 End Sub
 
+Sub aaaaaaCreatefinaloutSHEETOnly()
+
+CreatefinaloutsHEET
+
+Application.Wait Now + TimeValue("00:00:01")
+
+CopyDatafromStatisticsTOfinalout
+
+Application.Wait Now + TimeValue("00:00:01")
+
+CopySplitDataToFinalOutSheet
+
+Application.Wait Now + TimeValue("00:00:01")
+
+SetA9InteriorColorINfinaloutSHEET
+
+Application.Wait Now + TimeValue("00:00:01")
+
+MergeAndCenterInA3FinalOutSheet
+
+Application.Wait Now + TimeValue("00:00:01")
+
+CopyDurationFromInputFileSheettofinaloutSheet
+
+End Sub
 
 Sub RenameSheetIfInvalid()
     Dim currentSheet As Worksheet
@@ -578,25 +604,25 @@ Sub FindValueforGivenFieldsAndPasteInStatisticsSheet()
    
   
     FindValueforAndPasteInStatisticsSheet "Maximum Running Vusers"
-	
-	Application.Wait Now + TimeValue("00:00:01")
-	
+    
+    Application.Wait Now + TimeValue("00:00:01")
+    
     FindValueforAndPasteInStatisticsSheet "Total Throughput (bytes)"
-	
-	Application.Wait Now + TimeValue("00:00:01")
-	
+    
+    Application.Wait Now + TimeValue("00:00:01")
+    
     FindValueforAndPasteInStatisticsSheet "Average Throughput (B/s)"
-	
-	Application.Wait Now + TimeValue("00:00:01")
-	
+    
+    Application.Wait Now + TimeValue("00:00:01")
+    
     FindValueforAndPasteInStatisticsSheet "Total Hits:"
-	
-	Application.Wait Now + TimeValue("00:00:01")
-	
+    
+    Application.Wait Now + TimeValue("00:00:01")
+    
     FindValueforAndPasteInStatisticsSheet "Average Hits per Second"
-	
-	Application.Wait Now + TimeValue("00:00:01")
-	
+    
+    Application.Wait Now + TimeValue("00:00:01")
+    
     MsgBox "Completed Processing!", vbExclamation
 
 End Sub
@@ -834,3 +860,4 @@ End Sub
 
 '----------------------------------
 '----------------------------------
+
